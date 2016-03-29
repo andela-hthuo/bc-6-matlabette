@@ -14,4 +14,4 @@ It's also my project for Andela Class VI boot camp.
  
     The command `save > filename.mat` saves variables in the workspace.
     
-    The command `load filename.mat` loads the variable in `filename.mat` into the workspace.
+    The command `load filename.mat` loads the variables in `filename.mat` into the workspace.
