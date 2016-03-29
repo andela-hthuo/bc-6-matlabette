@@ -1,0 +1,5 @@
+.idea/
+*.py[cod]
+build/
+dist/
+*.egg-info/
