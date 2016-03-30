@@ -28,4 +28,13 @@ Features
     license="MIT",
     keywords="matlab repl matlabette mini minimal",
     url="https://github.com/thuo/bc-6-matlabette",
+    install_requires=[
+        'prompt-toolkit==0.60',
+        'Pygments == 2.1.3'
+    ],
+    entry_points= {
+        'console_scripts': [
+            'matlabette = matlabette.main:run',
+        ]
+    }
 )
