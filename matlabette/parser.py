@@ -6,14 +6,14 @@ Grammar
 =======
 array_expr    : '[' array_list ']'
 
-array_list    : element_list  ';' element_list
-              | element_list
+array_list    : atom_list  ';' atom_list
+              | atom_list
 
-element_list  : element ',' element_list
-              | element element_list
-              | element
+atom_list     : atom ',' atom_list
+              | atom atom_list
+              | atom
 
-element       : NUMERIC_LITERAL
+atom          : NUMERIC_LITERAL
               | '-' NUMERIC_LITERAL
 
 """
@@ -77,45 +77,45 @@ class Parser(object):
     def array_list(self):
         """
         Implements the rule:
-            array_list : element_list  ';' element_list
-                       | element_list
+            array_list : atom_list  ';' atom_list
+                       | atom_list
         """
         node = ParseTreeNode(value=[])
         while True:
             if self.match(Token.SEMI_COLON):
                 self.consume()
-            elements = self.element_list()
-            if elements:
-                if len(node.value) and len(node.value[-1]) != len(elements):
+            atoms = self.atom_list()
+            if atoms:
+                if len(node.value) and len(node.value[-1]) != len(atoms):
                     raise MatlabetteSyntaxError(self.token[1], "End of list not")
-                node.value.append(elements)
+                node.value.append(atoms)
             else:
                 break
         return node
 
-    def element_list(self):
+    def atom_list(self):
         """
         Implements the rule:
-            element_list  : element ',' element_list
-                          | element element_list
-                          | element
+            atom_list  : atom ',' atom_list
+                          | atom atom_list
+                          | atom
 
         """
-        elements = []
+        atoms = []
         while True:
             if self.match(Token.COMMA):
                 self.consume()
-            element = self.array_element()
-            if element is not None:
-                elements.append(element)
+            atom = self.atom()
+            if atom is not None:
+                atoms.append(atom)
             else:
                 break
-        return elements
+        return atoms
 
-    def array_element(self):
+    def atom(self):
         """
         Implements the rule:
-            element : NUMERIC_LITERAL
+            atom : NUMERIC_LITERAL
                     | '-' NUMERIC_LITERAL
         """
         value = None
@@ -124,7 +124,7 @@ class Parser(object):
             self.consume()
         elif self.match(Token.SUBTRACT_OPERATOR):
             self.consume()
-            value = -self.array_element().value
+            value = -self.atom().value
         return value
 
 
