@@ -27,7 +27,9 @@ class Context(object):
         if op:
             if parse_tree.value is not None:
                 action = self.unary_operations[op]
-                return action(parse_tree.value)
+                value = parse_tree.value if parse_tree.locked \
+                    else self.evaluate_value(parse_tree.value)
+                return action(value)
             else:
                 action = self.binary_operations[op]
                 return action(
@@ -35,11 +37,54 @@ class Context(object):
                     self.evaluate(parse_tree.right_child)
                 )
         elif parse_tree.value is not None:
-            return parse_tree.value
+            if parse_tree.locked:
+                return parse_tree.value
+            return self.evaluate_value(parse_tree.value)
         elif parse_tree.left_child:
             return self.evaluate(parse_tree.left_child)
         elif parse_tree.right_child:
             return self.evaluate(parse_tree.right_child)
+
+    def evaluate_value(self, node_value):
+        """
+        Return the value represented by a node value
+        """
+        # node_value is a variable name
+        if isinstance(node_value, unicode):
+            return self.dereference(node_value)
+
+        # node_value is an array
+        if isinstance(node_value, list):
+            if not node_value:
+                return node_value
+            values = []
+            column_count = len(node_value[0])
+            for row in node_value:
+                values_row = []
+                for cell in row:
+                    value = self.evaluate(cell)
+                    if isinstance(value, list):
+                        raise MatlabetteRuntimeError(
+                            "Nested arrays not allowed"
+                        )
+                    values_row.append(value)
+                if len(values_row) != column_count:
+                    raise MatlabetteRuntimeError(
+                        "Unequal column sizes"
+                    )
+                values.append(values_row)
+            return values
+        return node_value
+
+    def dereference(self, variable):
+        """
+        Return value stored in variable
+        """
+        if variable not in self.variables:
+            raise MatlabetteRuntimeError(
+                "{} is not defined".format(variable)
+            )
+        return self.variables[variable]
 
     def assign(self, variable, value):
         """
@@ -59,12 +104,7 @@ class Context(object):
         if variable in self.commands:
             return self.commands[variable]()
 
-        if variable not in self.variables:
-            raise MatlabetteRuntimeError(
-                "{} is not defined".format(variable)
-            )
-
-        value = self.variables[variable]
+        value = self.dereference(variable)
         output = "{}{} =".format(os.linesep, variable)
         spacer = "    "
         if isinstance(value, list):

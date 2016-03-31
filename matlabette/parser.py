@@ -4,20 +4,18 @@ Uses recursive-descent parsing algorithm
 
 Grammar
 =======
+statement     : identifier '=' expr
+              | identifier
 expr          : array_expr
               | atom
-statement     : identifier '=' array_expr
-              | identifier '=' atom
-              | identifier
-
 array_expr    : '[' array_list ']'
 
-array_list    : atom_list  ';' atom_list
-              | atom_list
+array_list    : expr_list  ';' expr_list
+              | expr_list
 
-atom_list     : atom ',' atom_list
-              | atom atom_list
-              | atom
+expr_list     : expr ',' expr_list
+              | expr expr_list
+              | expr
 
 atom          : NUMERIC_LITERAL
               | '-' NUMERIC_LITERAL
@@ -70,8 +68,8 @@ class Parser(object):
         if parse_tree is None:
             parse_tree = ParseTreeNode(
                 operator=u'=',
-                left_child=ParseTreeNode(value='ans'),
-                right_child=self.expression()
+                left_child=ParseTreeNode(value='ans', locked=True),
+                right_child=self.expression(True)
             )
         self.expect(Token.END_OF_LINE)
         return parse_tree
@@ -79,37 +77,50 @@ class Parser(object):
     def statement(self):
         """
         Implements the rule:
-            assign_stmt   : identifier '=' array_expr
-                           | identifier
+            statement     : identifier '=' expr
+                          | identifier
         """
-        if self.match(Token.VARIABLE_NAME) or self.match(Token.BUILTIN_NAME):
-            token = self.token_value
-            self.consume()
+        identifier = self.identifier()
+        if identifier is not None:
             if self.match(Token.END_OF_LINE):
                 node = ParseTreeNode(
                     operator=u'show',
-                    value=token
+                    value=identifier,
+                    locked=True
                 )
                 return node
             elif self.match(Token.ASSIGN_OPERATOR):
                 self.consume()
                 node = ParseTreeNode(
-                    left_child=ParseTreeNode(value=token),
+                    left_child=ParseTreeNode(value=identifier, locked=True),
                     operator=u'=',
-                    right_child=self.expression()
+                    right_child=self.expression(True)
                 )
                 return node
             else:
-                raise MatlabetteSyntaxError(self.token_value, Token.ASSIGN_OPERATOR)
+                raise MatlabetteSyntaxError(
+                    self.token_value,
+                    Token.ASSIGN_OPERATOR
+                )
         return None
 
-    def expression(self):
-        atom = self.atom()
+    def expression(self, fail):
+        """
+        Implements: expression : array_expr | atom
+        :param fail: if set to True, raise an exception instead of returning None
+        """
+        atom = self.atom() or self.identifier()
         if atom is not None:
             return ParseTreeNode(
                 value=atom,
             )
-        return self.array_expression()
+        array_expression = self.array_expression()
+        if array_expression is None and fail:
+            raise MatlabetteSyntaxError(
+                self.token_value,
+                "[ or a number"
+            )
+        return array_expression
 
     def array_expression(self):
         """
@@ -121,49 +132,55 @@ class Parser(object):
             node = self.array_list()
             self.expect(Token.RIGHT_SQUARE_BRACKET)
         else:
-            raise MatlabetteSyntaxError(
-                self.token_value,
-                Token.LEFT_SQUARE_BRACKET
-            )
+            return None
         return node
 
     def array_list(self):
         """
         Implements the rule:
-            array_list : atom_list  ';' atom_list
-                       | atom_list
+            array_list : expr_list  ';' expr_list
+                       | expr_list
         """
         node = ParseTreeNode(value=[])
         while True:
             if self.match(Token.SEMI_COLON):
                 self.consume()
-            atoms = self.atom_list()
+            atoms = self.expression_list()
             if atoms:
-                if len(node.value) and len(node.value[-1]) != len(atoms):
-                    raise MatlabetteSyntaxError(self.token_value, "End of list not")
                 node.value.append(atoms)
             else:
                 break
         return node
 
-    def atom_list(self):
+    def expression_list(self):
         """
         Implements the rule:
-            atom_list  : atom ',' atom_list
-                          | atom atom_list
-                          | atom
-
+            expr_list     : expr ',' expr_list
+                          | expr expr_list
+                          | expr
         """
-        atoms = []
+        expressions = []
         while True:
             if self.match(Token.COMMA):
                 self.consume()
-            atom = self.atom()
-            if atom is not None:
-                atoms.append(atom)
+            expression = self.expression(False)
+            if expression is not None:
+                expressions.append(expression)
             else:
                 break
-        return atoms
+        return expressions
+
+    def identifier(self):
+        """
+        Implements the rule:
+            identifier : IDENTIFIER
+        """
+        identifier = None
+        if self.match(Token.VARIABLE_NAME)  \
+                or self.match(Token.BUILTIN_NAME):
+            identifier = self.token_value
+            self.consume()
+        return identifier
 
     def atom(self):
         """
@@ -192,3 +209,4 @@ class ParseTreeNode(object):
         self.left_child = kwargs.get("left_child")
         self.right_child = kwargs.get("right_child")
         self.value = kwargs.get("value")
+        self.locked = kwargs.get("locked", False)
