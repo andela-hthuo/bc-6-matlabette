@@ -8,7 +8,7 @@ import os
 
 class Context(object):
 
-    def __init__(self):
+    def __init__(self, commands=None):
         self.variables = {}
         self.binary_operations = {
             u'=': self.assign
@@ -16,6 +16,7 @@ class Context(object):
         self.unary_operations = {
             u'show': self.show
         }
+        self.commands = commands or {}
 
     def evaluate(self, parse_tree):
         """
@@ -44,6 +45,10 @@ class Context(object):
         """
         Assigns value to variable
         """
+        if variable in self.commands:
+            raise MatlabetteRuntimeError(
+                "{} is reserved".format(variable)
+            )
         self.variables[variable] = value
         return self.show(variable)
 
@@ -51,6 +56,9 @@ class Context(object):
         """
         Generate string for displaying variable
         """
+        if variable in self.commands:
+            return self.commands[variable]()
+
         if variable not in self.variables:
             raise MatlabetteRuntimeError(
                 "{} is not defined".format(variable)

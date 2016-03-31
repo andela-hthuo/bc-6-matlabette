@@ -16,17 +16,22 @@ import os
 class Repl(object):
     def __init__(self):
         self.history = FileHistory('.history')
-        self.context = Context()
+        self.context = Context({
+            u'help': self.help,
+            u'exit': self.exit,
+        })
 
     def loop(self, message="matlabette> "):
         try:
-            print("Matlabette, a tiny MATLAB clone")
+            print(""" Matlabette, a tiny MATLAB clone.
+ Type exit or press Ctrl + C / Ctrl + D to exit.
+ Type help for help.""")
             while True:
                 line = self.prompt(message)
                 self.eval(line)
 
-        except KeyboardInterrupt:
-            print("Exiting...")
+        except (KeyboardInterrupt, EOFError):
+            print("Exiting...", os.linesep)
 
     def prompt(self, message):
         return prompt(
@@ -44,4 +49,29 @@ class Repl(object):
                 print(output)
 
         except MatlabetteError as e:
-            print(os.linesep, e.message, os.linesep)
+            print(os.linesep, "Error:", e.message, os.linesep)
+
+    @staticmethod
+    def exit():
+        raise KeyboardInterrupt
+
+    @staticmethod
+    def help():
+        return """
+
+Welcome to Matlabette!
+
+Matlabette is a tiny clone.
+It implements the following functionality:
+
+    - array creation
+    - array and matrix operations
+    - concatenation
+    - saving and loading workspaces
+
+To learn more about the first three, go to:
+    https://www.mathworks.com/help/matlab/learn_matlab/matrices-and-arrays.html
+
+To save your workspace, use save <filename>.
+To load workspace from file, use load <filename>
+"""
