@@ -43,8 +43,16 @@ class Parser(object):
     def token(self):
         return self.tokens[self.position]
 
+    @property
+    def token_type(self):
+        return self.token[0]
+
+    @property
+    def token_value(self):
+        return self.token[1]
+
     def match(self, token):
-        return token == self.token[0]
+        return token == self.token_type
 
     def consume(self):
         self.position += 1
@@ -53,7 +61,7 @@ class Parser(object):
         if self.match(token):
             self.consume()
             return True
-        raise MatlabetteSyntaxError(self.token[1], token)
+        raise MatlabetteSyntaxError(self.token_value, token)
 
     def parse(self):
         if self.match(Token.END_OF_LINE):
@@ -75,7 +83,7 @@ class Parser(object):
                            | identifier
         """
         if self.match(Token.VARIABLE_NAME) or self.match(Token.BUILTIN_NAME):
-            token = self.token[1]
+            token = self.token_value
             self.consume()
             if self.match(Token.END_OF_LINE):
                 node = ParseTreeNode(
@@ -92,7 +100,7 @@ class Parser(object):
                 )
                 return node
             else:
-                raise MatlabetteSyntaxError(self.token[1], Token.ASSIGN_OPERATOR)
+                raise MatlabetteSyntaxError(self.token_value, Token.ASSIGN_OPERATOR)
         return None
 
     def expression(self):
@@ -114,7 +122,7 @@ class Parser(object):
             self.expect(Token.RIGHT_SQUARE_BRACKET)
         else:
             raise MatlabetteSyntaxError(
-                self.token[1],
+                self.token_value,
                 Token.LEFT_SQUARE_BRACKET
             )
         return node
@@ -132,7 +140,7 @@ class Parser(object):
             atoms = self.atom_list()
             if atoms:
                 if len(node.value) and len(node.value[-1]) != len(atoms):
-                    raise MatlabetteSyntaxError(self.token[1], "End of list not")
+                    raise MatlabetteSyntaxError(self.token_value, "End of list not")
                 node.value.append(atoms)
             else:
                 break
@@ -166,7 +174,7 @@ class Parser(object):
         value = None
         if self.match(Token.INTEGER_LITERAL)\
                 or self.match(Token.FLOAT_LITERAL):
-            value = float(self.token[1])
+            value = float(self.token_value)
             self.consume()
         elif self.match(Token.SUBTRACT_OPERATOR):
             self.consume()
