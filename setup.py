@@ -30,7 +30,8 @@ Features
     url="https://github.com/thuo/bc-6-matlabette",
     install_requires=[
         'prompt-toolkit==0.60',
-        'Pygments == 2.1.3'
+        'Pygments == 2.1.3',
+        'colorama==0.3.7'
     ],
     entry_points= {
         'console_scripts': [

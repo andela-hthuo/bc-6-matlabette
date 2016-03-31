@@ -118,7 +118,7 @@ class Context(object):
             return self.commands[variable]()
 
         value = self.dereference(variable)
-        output = "{}{} =".format(os.linesep, variable)
+        output = "{} {} =".format(os.linesep, variable)
         spacer = "    "
         if isinstance(value, list):
             if value:
@@ -128,10 +128,28 @@ class Context(object):
                         output += "{}{}".format(spacer, cell)
                     output += os.linesep
             else:
-                output += " []"
+                output += " []" + os.linesep
         else:
-            output += " {}".format(value)
-        return output + os.linesep
+            output += " {}".format(value) + os.linesep
+        return output
+
+    def serialize(self):
+        return "\n".join(
+            [k + ' = ' + self.serialize_variable(v)
+             for k, v in self.variables.items()]
+        )
+
+    def serialize_variable(self, variable):
+        if isinstance(variable, float):
+            return str(variable)
+        if isinstance(variable, list):
+            if not variable:
+                return "[]"
+            if isinstance(variable[0], list):
+                return "[" + "; ".join(
+                    [self.serialize_variable(i) for i in variable]
+                ) + "]"
+            return " ".join([str(i) for i in variable])
 
 
 class Operators(object):
