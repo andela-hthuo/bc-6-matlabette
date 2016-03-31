@@ -45,7 +45,7 @@ class Parser(object):
         if self.match(token):
             self.consume()
             return True
-        raise MatlabetteSyntaxError(self.token[1], token[0])
+        raise MatlabetteSyntaxError(self.token[1], token)
 
     def parse(self):
         if not self.match(Token.END_OF_LINE):
@@ -116,15 +116,16 @@ class Parser(object):
         """
         Implements the rule:
             atom : NUMERIC_LITERAL
-                    | '-' NUMERIC_LITERAL
+                 | '-' NUMERIC_LITERAL
         """
         value = None
-        if self.match(Token.INTEGER_LITERAL):
-            value = int(self.token[1])
+        if self.match(Token.INTEGER_LITERAL)\
+                or self.match(Token.FLOAT_LITERAL):
+            value = float(self.token[1])
             self.consume()
         elif self.match(Token.SUBTRACT_OPERATOR):
             self.consume()
-            value = -self.atom().value
+            value = -self.atom()
         return value
 
 

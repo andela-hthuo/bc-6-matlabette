@@ -9,6 +9,8 @@ from pygments.token import (
     Punctuation,
     Operator,
     Literal,
+    Name,
+    Token as PygmentsToken
 )
 
 
@@ -20,11 +22,15 @@ class Token(object):
     RIGHT_SQUARE_BRACKET = 'RIGHT_SQUARE_BRACKET'
     COMMA = 'COMMA'
     SEMI_COLON = 'SEMI_COLON'
+    ASSIGN_OPERATOR = 'ASSIGN_OPERATOR'
     ADD_OPERATOR = 'ADD_OPERATOR'
     SUBTRACT_OPERATOR = 'SUBTRACT_OPERATOR'
     MULTIPLY_OPERATOR = 'MULTIPLY_OPERATOR'
     DIVIDE_OPERATOR = 'DIVIDE_OPERATOR'
     INTEGER_LITERAL = Literal.Number.Integer
+    FLOAT_LITERAL = Literal.Number.Float
+    VARIABLE_NAME = Name
+    BUILTIN_NAME = PygmentsToken.Name.Builtin
 
 
 class Lexer(object):
@@ -33,7 +39,14 @@ class Lexer(object):
         (Punctuation, u','): Token.COMMA,
         (Punctuation, u';'): Token.SEMI_COLON,
         (Punctuation, u'['): Token.LEFT_SQUARE_BRACKET,
-        (Punctuation, u']'): Token.RIGHT_SQUARE_BRACKET
+        (Punctuation, u']'): Token.RIGHT_SQUARE_BRACKET,
+        (Punctuation, u'('): Token.LEFT_PARENTHESIS,
+        (Punctuation, u')'): Token.RIGHT_PARENTHESIS,
+        (Punctuation, u'='): Token.ASSIGN_OPERATOR,
+        (Operator, u'+'): Token.ADD_OPERATOR,
+        (Operator, u'*'): Token.MULTIPLY_OPERATOR,
+        (Operator, u'-'): Token.SUBTRACT_OPERATOR,
+        (Operator, u'/'): Token.DIVIDE_OPERATOR,
     }
 
     @classmethod
