@@ -2,7 +2,7 @@
 Holds the state of the system
 """
 from __future__ import unicode_literals, print_function
-from errors import MatlabetteRuntimeError
+from errors import MatlabetteRuntimeError, InvalidArgumentsForOperator
 import os
 
 
@@ -11,10 +11,19 @@ class Context(object):
     def __init__(self, commands=None):
         self.variables = {}
         self.binary_operations = {
-            u'=': self.assign
+            u'=': self.assign,
+            u'+': Operators.add,
+            u'-': Operators.subtract,
+            u'*': Operators.multiply,
+            u'/': Operators.divide,
+            u'.+': Operators.add,
+            u'.-': Operators.subtract,
+            u'.*': Operators.multiply,
+            u'./': Operators.divide,
         }
         self.unary_operations = {
-            u'show': self.show
+            u'show': self.show,
+            u'\'': Operators.transpose,
         }
         self.commands = commands or {}
 
@@ -25,17 +34,21 @@ class Context(object):
         """
         op = parse_tree.operator
         if op:
-            if parse_tree.value is not None:
-                action = self.unary_operations[op]
-                value = parse_tree.value if parse_tree.locked \
-                    else self.evaluate_value(parse_tree.value)
-                return action(value)
-            else:
-                action = self.binary_operations[op]
-                return action(
-                    self.evaluate(parse_tree.left_child),
-                    self.evaluate(parse_tree.right_child)
-                )
+            try:
+                if parse_tree.value is not None:
+                    action = self.unary_operations[op]
+                    value = parse_tree.value if parse_tree.locked \
+                        else self.evaluate_value(parse_tree.value)
+                    return action(value)
+                else:
+                    action = self.binary_operations[op]
+                    return action(
+                        self.evaluate(parse_tree.left_child),
+                        self.evaluate(parse_tree.right_child)
+                    )
+            except InvalidArgumentsForOperator:
+                raise MatlabetteRuntimeError("Invalid arguments for operator {}".format(op))
+
         elif parse_tree.value is not None:
             if parse_tree.locked:
                 return parse_tree.value
@@ -119,3 +132,34 @@ class Context(object):
         else:
             output += " {}".format(value)
         return output + os.linesep
+
+
+class Operators(object):
+
+    @staticmethod
+    def add(lhs, rhs):
+        if isinstance(lhs, float) and isinstance(rhs, float):
+            return lhs + rhs
+        raise InvalidArgumentsForOperator
+
+    @staticmethod
+    def subtract(lhs, rhs):
+        if isinstance(lhs, float) and isinstance(rhs, float):
+            return lhs + rhs
+        raise InvalidArgumentsForOperator
+
+    @staticmethod
+    def multiply(lhs, rhs):
+        if isinstance(lhs, float) and isinstance(rhs, float):
+            return lhs * rhs
+        raise InvalidArgumentsForOperator
+
+    @staticmethod
+    def divide(lhs, rhs):
+        if isinstance(lhs, float) and isinstance(rhs, float):
+            return lhs + rhs
+        raise InvalidArgumentsForOperator
+
+    @staticmethod
+    def transpose(array):
+        return array

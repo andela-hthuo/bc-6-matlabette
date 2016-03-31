@@ -33,6 +33,7 @@ class Parser(object):
     """
     Takes a list tokens and converts them to a parse tree
     """
+
     def __init__(self, tokens):
         self.tokens = tokens
         self.position = 0
@@ -109,18 +110,77 @@ class Parser(object):
         Implements: expression : array_expr | atom
         :param fail: if set to True, raise an exception instead of returning None
         """
-        atom = self.atom() or self.identifier()
-        if atom is not None:
-            return ParseTreeNode(
-                value=atom,
-            )
-        array_expression = self.array_expression()
-        if array_expression is None and fail:
+        term = self.term()
+        if term is not None:
+            op, sub_expr = self.sub_expression()
+            if sub_expr is not None:
+                return ParseTreeNode(
+                    operator=op,
+                    left_child=term,
+                    right_child=sub_expr
+                )
+            op, sub_expr = self.sub_term()
+            if sub_expr is not None:
+                return ParseTreeNode(
+                    operator=op,
+                    left_child=term,
+                    right_child=sub_expr
+                )
+            return term
+        if fail:
             raise MatlabetteSyntaxError(
                 self.token_value,
                 "[ or a number"
             )
-        return array_expression
+
+    def sub_expression(self):
+        node = ParseTreeNode()
+        if self.match(Token.SUBTRACT_OPERATOR) \
+                or self.match(Token.ADD_OPERATOR) \
+                or self.match(Token.ELEM_SUBTRACT_OPERATOR) \
+                or self.match(Token.ELEM_ADD_OPERATOR):
+            operator = self.token_value
+            self.consume()
+            node.left_child = self.term()
+            if not node.left_child:
+                raise MatlabetteSyntaxError(
+                    self.token_type,
+                    "number"
+                )
+            node.operator, node.right_child = self.sub_expression()
+            return operator, node
+        return None, None
+
+    def term(self):
+        terminal = self.terminal()
+        if terminal:
+            op, sub_term = self.sub_term()
+            if sub_term is not None:
+                return ParseTreeNode(
+                    operator=op,
+                    left_child=terminal,
+                    right_child=sub_term
+                )
+            return terminal
+        return None
+
+    def sub_term(self):
+        node = ParseTreeNode()
+        if self.match(Token.DIVIDE_OPERATOR) \
+                or self.match(Token.MULTIPLY_OPERATOR) \
+                or self.match(Token.ELEM_DIVIDE_OPERATOR) \
+                or self.match(Token.ELEM_MULTIPLY_OPERATOR):
+            operator = self.token_value
+            self.consume()
+            node.left_child = self.terminal()
+            if not node.left_child:
+                raise MatlabetteSyntaxError(
+                    self.token_type,
+                    "number"
+                )
+            node.operator, node.right_child = self.sub_term()
+            return operator, node
+        return None, None
 
     def array_expression(self):
         """
@@ -170,13 +230,25 @@ class Parser(object):
                 break
         return expressions
 
+    def terminal(self):
+        node = None
+        terminal = self.atom() or self.identifier()
+        if terminal:
+            node = ParseTreeNode(value=terminal)
+        else:
+            node = self.array_expression()
+        if node and self.match(Token.TRANSPOSE_OPERATOR):
+            node.operator = self.token_value
+            self.consume()
+        return node
+
     def identifier(self):
         """
         Implements the rule:
             identifier : IDENTIFIER
         """
         identifier = None
-        if self.match(Token.VARIABLE_NAME)  \
+        if self.match(Token.VARIABLE_NAME) \
                 or self.match(Token.BUILTIN_NAME):
             identifier = self.token_value
             self.consume()
@@ -189,7 +261,7 @@ class Parser(object):
                  | '-' NUMERIC_LITERAL
         """
         value = None
-        if self.match(Token.INTEGER_LITERAL)\
+        if self.match(Token.INTEGER_LITERAL) \
                 or self.match(Token.FLOAT_LITERAL):
             value = float(self.token_value)
             self.consume()
@@ -204,6 +276,7 @@ class ParseTreeNode(object):
     One node of the parse tree
     This defines the parse tree recursively
     """
+
     def __init__(self, **kwargs):
         self.operator = kwargs.get("operator")
         self.left_child = kwargs.get("left_child")

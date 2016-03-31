@@ -28,3 +28,7 @@ class MatlabetteRuntimeError(MatlabetteError):
     Exception for matlabette runtime errors
     """
     pass
+
+
+class InvalidArgumentsForOperator(MatlabetteError):
+    pass

@@ -27,6 +27,11 @@ class Token(object):
     SUBTRACT_OPERATOR = 'SUBTRACT_OPERATOR'
     MULTIPLY_OPERATOR = 'MULTIPLY_OPERATOR'
     DIVIDE_OPERATOR = 'DIVIDE_OPERATOR'
+    ELEM_ADD_OPERATOR = 'ELEM_ADD_OPERATOR'
+    ELEM_SUBTRACT_OPERATOR = 'ELEM_SUBTRACT_OPERATOR'
+    ELEM_MULTIPLY_OPERATOR = 'ELEM_MULTIPLY_OPERATOR'
+    ELEM_DIVIDE_OPERATOR = 'ELEM_DIVIDE_OPERATOR'
+    TRANSPOSE_OPERATOR = 'TRANSPOSE_OPERATOR'
     INTEGER_LITERAL = Literal.Number.Integer
     FLOAT_LITERAL = Literal.Number.Float
     VARIABLE_NAME = Name
@@ -47,6 +52,11 @@ class Lexer(object):
         (Operator, u'*'): Token.MULTIPLY_OPERATOR,
         (Operator, u'-'): Token.SUBTRACT_OPERATOR,
         (Operator, u'/'): Token.DIVIDE_OPERATOR,
+        (Operator, u'.+'): Token.ELEM_ADD_OPERATOR,
+        (Operator, u'.*'): Token.ELEM_MULTIPLY_OPERATOR,
+        (Operator, u'.-'): Token.ELEM_SUBTRACT_OPERATOR,
+        (Operator, u'./'): Token.ELEM_DIVIDE_OPERATOR,
+        (Operator, u'\''): Token.TRANSPOSE_OPERATOR,
     }
 
     @classmethod
