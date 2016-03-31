@@ -2,58 +2,72 @@
 Holds the state of the system
 """
 from __future__ import unicode_literals, print_function
-from operator import (
-    add,
-    sub,
-    mul,
-    div,
-)
 from errors import MatlabetteRuntimeError
+import os
 
 
 class Context(object):
 
     def __init__(self):
         self.variables = {}
-        self.operations = {
-            u'+': add,
-            u'-': sub,
-            u'*': mul,
-            u'/': div,
+        self.binary_operations = {
             u'=': self.assign
+        }
+        self.unary_operations = {
+            u'show': self.show
         }
 
     def evaluate(self, parse_tree):
-        if parse_tree.value is not None:
-            return parse_tree.value
-        else:
-            op = parse_tree.operator
-            if op:
-                action = self.operations[op]
+        """
+        Walks the parse tree and determine the output expected from
+        it
+        """
+        op = parse_tree.operator
+        if op:
+            if parse_tree.value is not None:
+                action = self.unary_operations[op]
+                return action(parse_tree.value)
+            else:
+                action = self.binary_operations[op]
                 return action(
                     self.evaluate(parse_tree.left_child),
                     self.evaluate(parse_tree.right_child)
                 )
-            elif parse_tree.left_child:
-                return self.evaluate(parse_tree.left_child)
-            elif parse_tree.right_child:
-                return self.evaluate(parse_tree.right_child)
+        elif parse_tree.value is not None:
+            return parse_tree.value
+        elif parse_tree.left_child:
+            return self.evaluate(parse_tree.left_child)
+        elif parse_tree.right_child:
+            return self.evaluate(parse_tree.right_child)
 
     def assign(self, variable, value):
+        """
+        Assigns value to variable
+        """
         self.variables[variable] = value
-        self.output(variable)
-        return self.variables[variable]
+        return self.show(variable)
 
-    def output(self, variable):
+    def show(self, variable):
+        """
+        Generate string for displaying variable
+        """
         if variable not in self.variables:
-            raise MatlabetteRuntimeError("{} is not defined".format(variable))
-        print("{} =".format(variable))
+            raise MatlabetteRuntimeError(
+                "{} is not defined".format(variable)
+            )
+
         value = self.variables[variable]
-        if not len(value):
-            print("\t", "[]")
-        for row in value:
-            print("\t", end='')
-            for cell in row:
-                print(cell, "\t", end='')
-            print('')
-        print('')
+        output = "{}{} =".format(os.linesep, variable)
+        spacer = "    "
+        if isinstance(value, list):
+            if value:
+                output += os.linesep
+                for row in value:
+                    for cell in row:
+                        output += "{}{}".format(spacer, cell)
+                    output += os.linesep
+            else:
+                output += " []"
+        else:
+            output += " {}".format(value)
+        return output + os.linesep

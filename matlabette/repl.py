@@ -10,6 +10,7 @@ from lexer import Lexer
 from parser import Parser
 from errors import MatlabetteError
 from context import Context
+import os
 
 
 class Repl(object):
@@ -19,6 +20,7 @@ class Repl(object):
 
     def loop(self, message="matlabette> "):
         try:
+            print("Matlabette, a tiny MATLAB clone")
             while True:
                 line = self.prompt(message)
                 self.eval(line)
@@ -31,7 +33,6 @@ class Repl(object):
             message,
             history=self.history,
             auto_suggest=AutoSuggestFromHistory(),
-
         )
 
     def eval(self, line):
@@ -39,7 +40,8 @@ class Repl(object):
         try:
             parse_tree = Parser(tokens).parse()
             if parse_tree:
-                self.context.evaluate(parse_tree)
+                output = self.context.evaluate(parse_tree)
+                print(output)
 
         except MatlabetteError as e:
-            print("\r\n\t", e.message, "\r\n")
+            print(os.linesep, e.message, os.linesep)

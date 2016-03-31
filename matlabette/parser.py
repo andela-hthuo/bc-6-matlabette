@@ -4,6 +4,12 @@ Uses recursive-descent parsing algorithm
 
 Grammar
 =======
+expr          : array_expr
+              | atom
+statement     : identifier '=' array_expr
+              | identifier '=' atom
+              | identifier
+
 array_expr    : '[' array_list ']'
 
 array_list    : atom_list  ';' atom_list
@@ -15,6 +21,8 @@ atom_list     : atom ',' atom_list
 
 atom          : NUMERIC_LITERAL
               | '-' NUMERIC_LITERAL
+
+identifier    : IDENTIFIER
 
 """
 
@@ -48,15 +56,52 @@ class Parser(object):
         raise MatlabetteSyntaxError(self.token[1], token)
 
     def parse(self):
-        if not self.match(Token.END_OF_LINE):
-            node = ParseTreeNode(
+        if self.match(Token.END_OF_LINE):
+            return ParseTreeNode()
+        parse_tree = self.statement()
+        if parse_tree is None:
+            parse_tree = ParseTreeNode(
                 operator=u'=',
                 left_child=ParseTreeNode(value='ans'),
-                right_child=self.array_expression()
+                right_child=self.expression()
             )
-            self.expect(Token.END_OF_LINE)
-            return node
-        return ParseTreeNode()
+        self.expect(Token.END_OF_LINE)
+        return parse_tree
+
+    def statement(self):
+        """
+        Implements the rule:
+            assign_stmt   : identifier '=' array_expr
+                           | identifier
+        """
+        if self.match(Token.VARIABLE_NAME) or self.match(Token.BUILTIN_NAME):
+            token = self.token[1]
+            self.consume()
+            if self.match(Token.END_OF_LINE):
+                node = ParseTreeNode(
+                    operator=u'show',
+                    value=token
+                )
+                return node
+            elif self.match(Token.ASSIGN_OPERATOR):
+                self.consume()
+                node = ParseTreeNode(
+                    left_child=ParseTreeNode(value=token),
+                    operator=u'=',
+                    right_child=self.expression()
+                )
+                return node
+            else:
+                raise MatlabetteSyntaxError(self.token[1], Token.ASSIGN_OPERATOR)
+        return None
+
+    def expression(self):
+        atom = self.atom()
+        if atom is not None:
+            return ParseTreeNode(
+                value=atom,
+            )
+        return self.array_expression()
 
     def array_expression(self):
         """
