@@ -148,17 +148,40 @@ class Repl(object):
         return """
 Welcome to Matlabette!
 
-Matlabette is a tiny clone.
+Matlabette is a tiny MATLAB clone.
 It implements the following functionality:
 
-    - array creation
-    - array and matrix operations
-    - concatenation
-    - saving and loading workspaces
+Array creation
+==============
 
-To learn more about the first three, go to:
-    https://www.mathworks.com/help/matlab/learn_matlab/matrices-and-arrays.html
+    a = [1, 2]
+    b = [10 30; 40 50]
 
-To save your workspace, use save <filename>.
-To load workspace from file, use load <filename>
+Array and matrix operations
+===========================
+Transpose
+---------
+    a = [1 2]
+    a'
+
+Dot product
+-----------
+    a = [3 2]
+    b = [4; 3]
+    a * b
+
+Element-wise operations
+---------------------------
+    a = [7 8]
+    b = [4 3]
+    a .* b
+    a + 1
+    a - b
+
+Save and load workspace
+=======================
+    save <filename>
+    load <filename>
 """
+
+

@@ -51,6 +51,37 @@ matlabette> a = [1 2 3; 4 5 6; 7 8 9]
     7.0    8.0    9.0
 ```
  
+### Matrix operations
+**Transpose**
+```
+matlabette> a = [1 2]
+matlabette> a'
+ ans =
+    1.0
+    2.0
+```
+**Dot product**
+```
+matlabette> a = [3 2; 2, 5]
+matlabette> b = [4 6; 3 2]
+matlabette> a * b
+ ans =
+    18.0    22.0
+    23.0    22.0
+```
+
+**Element-wise operations**
+```
+matlabette> [7 8] .* [4 3]
+ ans =
+    28.0    24.0
+```
+```
+matlabette> [2 3; 4 5] + 1
+ ans =
+    2.0    3.0
+```
+
 ### Saving and loading workspace:
 To save the workspace:
 ```
