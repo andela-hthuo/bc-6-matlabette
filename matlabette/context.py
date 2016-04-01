@@ -3,6 +3,7 @@ Holds the state of the system
 """
 from __future__ import unicode_literals, print_function
 from errors import MatlabetteRuntimeError, InvalidArgumentsForOperator
+from operators import Operators
 import os
 
 
@@ -16,10 +17,10 @@ class Context(object):
             u'-': Operators.subtract,
             u'*': Operators.multiply,
             u'/': Operators.divide,
-            u'.+': Operators.add,
-            u'.-': Operators.subtract,
-            u'.*': Operators.multiply,
-            u'./': Operators.divide,
+            u'.+': Operators.elem_add,
+            u'.-': Operators.elem_subtract,
+            u'.*': Operators.elem_multiply,
+            u'./': Operators.elem_divide,
         }
         self.unary_operations = {
             u'show': self.show,
@@ -151,33 +152,3 @@ class Context(object):
                 ) + "]"
             return " ".join([str(i) for i in variable])
 
-
-class Operators(object):
-
-    @staticmethod
-    def add(lhs, rhs):
-        if isinstance(lhs, float) and isinstance(rhs, float):
-            return lhs + rhs
-        raise InvalidArgumentsForOperator
-
-    @staticmethod
-    def subtract(lhs, rhs):
-        if isinstance(lhs, float) and isinstance(rhs, float):
-            return lhs + rhs
-        raise InvalidArgumentsForOperator
-
-    @staticmethod
-    def multiply(lhs, rhs):
-        if isinstance(lhs, float) and isinstance(rhs, float):
-            return lhs * rhs
-        raise InvalidArgumentsForOperator
-
-    @staticmethod
-    def divide(lhs, rhs):
-        if isinstance(lhs, float) and isinstance(rhs, float):
-            return lhs + rhs
-        raise InvalidArgumentsForOperator
-
-    @staticmethod
-    def transpose(array):
-        return array
