@@ -4,7 +4,6 @@ Manages the read-eval-print loop
 from __future__ import unicode_literals, print_function
 from prompt_toolkit import prompt
 from prompt_toolkit.history import FileHistory
-from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from pygments.lexers.matlab import MatlabLexer
 from colorama import Fore, init
 
@@ -23,7 +22,7 @@ if home:
         os.mkdir(matlabette_dir)
     if matlabette_dir:
         workspace = os.path.join(matlabette_dir, 'workspace')
-        if workspace:
+        if not os.path.isfile(workspace):
             open(workspace, 'w').close()
         history = os.path.join(matlabette_dir, 'history')
 workspace_file = workspace or 'workspace'
