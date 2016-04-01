@@ -49,6 +49,8 @@ class Context(object):
                     )
             except InvalidArgumentsForOperator:
                 raise MatlabetteRuntimeError("Invalid arguments for operator {}".format(op))
+            except (ValueError, ZeroDivisionError) as e:
+                raise MatlabetteRuntimeError(e.message)
 
         elif parse_tree.value is not None:
             if parse_tree.locked:

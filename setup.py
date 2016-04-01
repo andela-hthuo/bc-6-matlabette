@@ -31,7 +31,8 @@ Features
     install_requires=[
         'prompt-toolkit==0.60',
         'Pygments == 2.1.3',
-        'colorama==0.3.7'
+        'colorama==0.3.7',
+        'numpy==1.11.0'
     ],
     entry_points= {
         'console_scripts': [
