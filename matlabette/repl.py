@@ -170,12 +170,16 @@ Dot product
     a * b
 
 Element-wise operations
----------------------------
+-----------------------
     a = [7 8]
     b = [4 3]
     a .* b
     a + 1
     a - b
+
+Inverse
+-------
+    inv([2 0; 0 2])
 
 Save and load workspace
 =======================

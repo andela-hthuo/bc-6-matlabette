@@ -82,6 +82,15 @@ matlabette> [2 3; 4 5] + 1
     2.0    3.0
 ```
 
+**Inverse**
+```
+matlabette> inv([2 0; 0 2])
+ ans =
+   0.5    0.0
+   0.0    0.5
+```
+
+
 ### Saving and loading workspace:
 To save the workspace:
 ```
