@@ -98,7 +98,35 @@ class Parser(object):
                     right_child=self.expression(True)
                 )
                 return node
+            elif self.match(Token.TRANSPOSE_OPERATOR):
+                self.consume()
+                node = ParseTreeNode(
+                    left_child=ParseTreeNode(value=u'ans', locked=True),
+                    operator=u'=',
+                    right_child=ParseTreeNode(value=identifier, operator=u'\'')
+                )
+                return node
             else:
+                op, sub_expr = self.sub_expression()
+                if sub_expr is not None:
+                    return ParseTreeNode(
+                        left_child=ParseTreeNode(value=u'ans', locked=True),
+                        operator=u'=',
+                        right_child=ParseTreeNode(
+                            operator=op,
+                            left_child=ParseTreeNode(value=identifier),
+                            right_child=sub_expr)
+                    )
+                op, sub_expr = self.sub_term()
+                if sub_expr is not None:
+                    return ParseTreeNode(
+                        left_child=ParseTreeNode(value=u'ans', locked=True),
+                        operator=u'=',
+                        right_child=ParseTreeNode(
+                            operator=op,
+                            left_child=ParseTreeNode(value=identifier),
+                            right_child=sub_expr)
+                    )
                 raise MatlabetteSyntaxError(
                     self.token_value,
                     Token.ASSIGN_OPERATOR
