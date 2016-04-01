@@ -3,15 +3,60 @@ Matlabette is a minimal [REPL](https://en.wikipedia.org/wiki/Read–eval–print
 
 It's also my project for Andela Class VI boot camp.
 
+The name Matlabette is MATLAB plus the diminutive suffix -ette to imply a smaller version of MATLAB. Like how a cigarette refers to a smaller cigar
+
+## Installation
+### Requirements
+ * Python 2.7
+ * Git
+
+It's recommended to use a [virtual environment](http://docs.python-guide.org/en/latest/dev/virtualenvs/)
+
+You can install Matlabette using pip
+```
+pip install -e git+https://github.com/thuo/bc-6-matlabette#egg=matlabette
+```
+
+Alternatively, you can install by cloning this repo then using setup_tools to install
+```
+git clone https://github.com/thuo/bc-6-matlabette
+cd bc-6-matlabette
+python setup.py install
+```
+
+## Running
+If you have installed the app, you can run by simply using the `matlabette` command.
+
+Alternatively, you can run without installing by cloning this repo and running `run.py`. (It's recommended to use a virtual environment)
+```
+git clone https://github.com/thuo/bc-6-matlabette
+cd bc-6-matlabette
+pip install -r requirements
+python run.py
+```
+
 ## Features
- * Array creation
+### Array creation
+```
+matlabette> a = [1 2 3]
+ a =
+    1.0    2.0    3.0
+
+```
+```
+matlabette> a = [1 2 3; 4 5 6; 7 8 9]
+ a =
+    1.0    2.0    3.0
+    3.0    5.0    6.0
+    7.0    8.0    9.0
+```
  
- * Array and matrix operations
- 
- * Array concatenation
- 
- * Saving and loading workspace:
- 
-    The command `save > filename.mat` saves variables in the workspace.
-    
-    The command `load filename.mat` loads the variables in `filename.mat` into the workspace.
+### Saving and loading workspace:
+To save the workspace:
+```
+matlabette> save <filename>
+```
+To load workspace from file:
+```
+matlabette> load <filename>
+```
