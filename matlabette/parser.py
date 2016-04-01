@@ -259,9 +259,10 @@ class Parser(object):
         return expressions
 
     def terminal(self):
-        node = None
-        terminal = self.atom() or self.identifier()
-        if terminal:
+        terminal = self.atom()
+        if terminal is None:
+            terminal = self.identifier()
+        if terminal is not None:
             node = ParseTreeNode(value=terminal)
         else:
             node = self.array_expression()
