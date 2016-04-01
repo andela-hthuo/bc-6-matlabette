@@ -24,7 +24,7 @@ if home:
     if matlabette_dir:
         workspace = os.path.join(matlabette_dir, 'workspace')
         if workspace:
-            open(workspace, 'w')
+            open(workspace, 'w').close()
         history = os.path.join(matlabette_dir, 'history')
 workspace_file = workspace or 'workspace'
 history_file = history or 'history'
