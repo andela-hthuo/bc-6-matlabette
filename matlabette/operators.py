@@ -18,7 +18,7 @@ class Operators(object):
             if isinstance(rhs, float):
                 return (numpy.array(lhs) + rhs).tolist()
             if isinstance(rhs, list):
-                return (numpy.array(lhs) + numpy.array(lhs)).tolist()
+                return (numpy.array(lhs) + numpy.array(rhs)).tolist()
         raise InvalidArgumentsForOperator
 
     @staticmethod
@@ -32,7 +32,7 @@ class Operators(object):
             if isinstance(rhs, float):
                 return (numpy.array(lhs) - rhs).tolist()
             if isinstance(rhs, list):
-                return (numpy.array(lhs) - numpy.array(lhs)).tolist()
+                return (numpy.array(lhs) - numpy.array(rhs)).tolist()
         raise InvalidArgumentsForOperator
 
     @staticmethod
@@ -46,7 +46,7 @@ class Operators(object):
             if isinstance(rhs, float):
                 return (numpy.array(lhs) * rhs).tolist()
             if isinstance(rhs, list):
-                return (numpy.array(lhs).dot(numpy.array(lhs))).tolist()
+                return (numpy.array(lhs).dot(numpy.array(rhs))).tolist()
         raise InvalidArgumentsForOperator
 
     @staticmethod
@@ -60,7 +60,7 @@ class Operators(object):
             if isinstance(rhs, float):
                 return (numpy.array(lhs) / rhs).tolist()
             if isinstance(rhs, list):
-                return (numpy.array(lhs) / numpy.array(lhs)).tolist()
+                return (numpy.array(lhs) / numpy.array(rhs)).tolist()
         raise InvalidArgumentsForOperator
 
     @staticmethod
@@ -74,7 +74,7 @@ class Operators(object):
     @staticmethod
     def elem_multiply(lhs, rhs):
         if isinstance(lhs, list) and isinstance(rhs, list):
-            return (numpy.array(lhs) * numpy.array(lhs)).tolist()
+            return (numpy.array(lhs) * numpy.array(rhs)).tolist()
         return Operators.multiply(lhs, rhs)
 
     @staticmethod
