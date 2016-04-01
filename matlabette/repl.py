@@ -6,12 +6,14 @@ from prompt_toolkit import prompt
 from prompt_toolkit.history import FileHistory
 from pygments.lexers.matlab import MatlabLexer
 from colorama import Fore, init
+from prompt_toolkit.contrib.completers import WordCompleter
 
 from lexer import Lexer
 from parser import Parser
 from errors import MatlabetteError
 from context import Context
 import os
+import re
 
 init()
 home = os.environ.get("HOME") or os.environ.get("USERPROFILE")
@@ -30,7 +32,6 @@ history_file = history or 'history'
 
 
 class Repl(object):
-
     def __init__(self):
         self.history = FileHistory(history_file)
         self.context = Context({
@@ -39,6 +40,17 @@ class Repl(object):
             u'save': self.save,
             u'load': self.load_default,
         })
+
+    @staticmethod
+    def get_word_completer():
+        if os.path.isfile(history_file):
+            _file = open(history_file)
+            history_list = _file.read().split('\n')
+            history_list = [
+                re.sub(r'#.*', '',  re.sub('^\+', '', i))
+                for i in history_list
+                ]
+            return WordCompleter(list(set(history_list)), ignore_case=True)
 
     def loop(self, message="matlabette> "):
         try:
@@ -60,6 +72,7 @@ class Repl(object):
             message,
             history=self.history,
             lexer=MatlabLexer,
+            completer=self.get_word_completer(),
             display_completions_in_columns=True,
             mouse_support=True
         )
