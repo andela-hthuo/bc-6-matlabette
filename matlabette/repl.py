@@ -15,13 +15,25 @@ from context import Context
 import os
 
 init()
+home = os.environ.get("HOME") or os.environ.get("USERPROFILE")
+workspace, history = None, None
+if home:
+    matlabette_dir = os.path.join(home, '.matlabette')
+    if not os.path.isdir(matlabette_dir):
+        os.mkdir(matlabette_dir)
+    if matlabette_dir:
+        workspace = os.path.join(matlabette_dir, 'workspace')
+        if workspace:
+            open(workspace, 'w')
+        history = os.path.join(matlabette_dir, 'history')
+workspace_file = workspace or 'workspace'
+history_file = history or 'history'
 
 
 class Repl(object):
-    default_workspace = "workspace.mat"
 
     def __init__(self):
-        self.history = FileHistory('.history')
+        self.history = FileHistory(history_file)
         self.context = Context({
             u'help': self.help,
             u'exit': self.exit,
@@ -41,13 +53,13 @@ class Repl(object):
                 self.eval(line)
 
         except (KeyboardInterrupt, EOFError):
-            self.exit_prompt()
+            if self.context.variables:
+                self.exit_prompt()
 
     def prompt(self, message):
         return prompt(
             message,
             history=self.history,
-            auto_suggest=AutoSuggestFromHistory(),
             lexer=MatlabLexer,
             display_completions_in_columns=True,
             mouse_support=True
@@ -108,14 +120,14 @@ class Repl(object):
         print ()
 
     def load_default(self):
-        if os.path.isfile(self.default_workspace):
-            self.load(self.default_workspace)
+        if os.path.isfile(workspace_file):
+            self.load(workspace_file)
         else:
             print (Fore.YELLOW)
             print(" Default workspace doesn't exist. To create it, type save")
             print ()
 
-    def save(self, filename=default_workspace):
+    def save(self, filename=workspace_file):
         print()
         try:
             with open(filename, 'w') as f:
