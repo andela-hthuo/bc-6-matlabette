@@ -21,12 +21,17 @@ class Context(object):
             u'.-': Operators.elem_subtract,
             u'.*': Operators.elem_multiply,
             u'./': Operators.elem_divide,
+            u'call': self.function_call,
         }
         self.unary_operations = {
             u'show': self.show,
             u'\'': Operators.transpose,
         }
         self.commands = commands or {}
+        self.functions = {
+            u'inv': Operators.invert,
+            u'transpose': Operators.transpose_function
+        }
 
     def evaluate(self, parse_tree):
         """
@@ -48,8 +53,10 @@ class Context(object):
                         self.evaluate(parse_tree.right_child)
                     )
             except InvalidArgumentsForOperator:
-                raise MatlabetteRuntimeError("Invalid arguments for operator {}".format(op))
-            except (ValueError, ZeroDivisionError) as e:
+                raise MatlabetteRuntimeError(
+                    "Invalid arguments for operator {}".format(op)
+                )
+            except Exception as e:
                 raise MatlabetteRuntimeError(e.message)
 
         elif parse_tree.value is not None:
@@ -74,21 +81,28 @@ class Context(object):
             if not node_value:
                 return node_value
             values = []
-            column_count = len(node_value[0])
-            for row in node_value:
-                values_row = []
-                for cell in row:
-                    value = self.evaluate(cell)
-                    if isinstance(value, list):
+
+            if not isinstance(node_value[0], list):
+                for expr in node_value:
+                    value = self.evaluate(expr)
+                    values.append(value)
+
+            else:
+                column_count = len(node_value[0])
+                for row in node_value:
+                    values_row = []
+                    for cell in row:
+                        value = self.evaluate(cell)
+                        if isinstance(value, list):
+                            raise MatlabetteRuntimeError(
+                                "Nested arrays not allowed"
+                            )
+                        values_row.append(value)
+                    if len(values_row) != column_count:
                         raise MatlabetteRuntimeError(
-                            "Nested arrays not allowed"
+                            "Unequal column sizes"
                         )
-                    values_row.append(value)
-                if len(values_row) != column_count:
-                    raise MatlabetteRuntimeError(
-                        "Unequal column sizes"
-                    )
-                values.append(values_row)
+                    values.append(values_row)
             return values
         return node_value
 
@@ -136,6 +150,11 @@ class Context(object):
             output += " {}".format(value) + os.linesep
         return output
 
+    def function_call(self, function, params):
+        if function not in self.functions:
+            raise MatlabetteRuntimeError("Function '{}' doesn't exist".format(function))
+        return self.functions[function](params)
+
     def serialize(self):
         return "\n".join(
             [k + ' = ' + self.serialize_variable(v)
@@ -153,4 +172,3 @@ class Context(object):
                     [self.serialize_variable(i) for i in variable]
                 ) + "]"
             return " ".join([str(i) for i in variable])
-

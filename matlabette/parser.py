@@ -106,6 +106,24 @@ class Parser(object):
                     right_child=ParseTreeNode(value=identifier, operator=u'\'')
                 )
                 return node
+            elif self.match(Token.LEFT_PARENTHESIS):
+                self.consume()
+                function = ParseTreeNode(
+                    value=identifier,
+                    locked=True
+                )
+                node = ParseTreeNode(
+                    operator=u'call',
+                    left_child=function,
+                    right_child=ParseTreeNode(value=self.expression_list())
+                )
+                self.expect(Token.RIGHT_PARENTHESIS)
+                return ParseTreeNode(
+                    left_child=ParseTreeNode(value=u'ans', locked=True),
+                    operator=u'=',
+                    right_child=node
+                )
+
             else:
                 op, sub_expr = self.sub_expression()
                 if sub_expr is not None:
@@ -129,7 +147,7 @@ class Parser(object):
                     )
                 raise MatlabetteSyntaxError(
                     self.token_value,
-                    Token.ASSIGN_OPERATOR
+                    "'=', (, ' or an operator"
                 )
         return None
 
@@ -262,6 +280,20 @@ class Parser(object):
         terminal = self.atom()
         if terminal is None:
             terminal = self.identifier()
+            if terminal is not None and self.match(Token.LEFT_PARENTHESIS):
+                self.consume()
+                function = ParseTreeNode(
+                    value=terminal,
+                    locked=True
+                )
+                node = ParseTreeNode(
+                    operator=u'call',
+                    left_child=function,
+                    right_child=ParseTreeNode(value=self.expression_list())
+                )
+                self.expect(Token.RIGHT_PARENTHESIS)
+                return node
+
         if terminal is not None:
             node = ParseTreeNode(value=terminal)
         else:

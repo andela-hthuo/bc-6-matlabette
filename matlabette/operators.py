@@ -1,7 +1,7 @@
 """
 Operators
 """
-from errors import InvalidArgumentsForOperator
+from errors import InvalidArgumentsForOperator, MatlabetteRuntimeError
 import numpy
 
 
@@ -84,3 +84,19 @@ class Operators(object):
     @staticmethod
     def transpose(array):
         return numpy.array(array).T.tolist()
+
+    @staticmethod
+    def invert(matrix_array):
+        if len(matrix_array) != 1:
+            raise MatlabetteRuntimeError('inv takes only one argument')
+        if not isinstance(matrix_array[0], list):
+            raise MatlabetteRuntimeError('Invalid argument for inv')
+        return numpy.linalg.inv(matrix_array[0]).tolist()
+
+    @staticmethod
+    def transpose_function(matrix_array):
+        if len(matrix_array) != 1:
+            raise MatlabetteRuntimeError('transpose takes only one argument')
+        if not isinstance(matrix_array[0], list):
+            raise MatlabetteRuntimeError('Invalid argument for transpose')
+        return Operators.transpose(matrix_array[0])
